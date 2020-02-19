@@ -1,0 +1,19 @@
+{
+  "name": "tugas2-ivan17051",
+  "version": "1.0.0",
+  "description": "tugas2-ivan17051",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2019Genap-PBKK-F/tugas2-ivan17051.git"
+  },
+  "author": "ivan17051",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/2019Genap-PBKK-F/tugas2-ivan17051/issues"
+  },
+  "homepage": "https://github.com/2019Genap-PBKK-F/tugas2-ivan17051#readme"
+}
