@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var mahasiswaController = require('./Controller/MahasiswaController')();
 //const http = require("http");
-const hostname = 'localhost';
+const hostname = '10.199.14.46';
 const port = 8011;
 
 // //Create HTTP server and listen on port 8020 for requests
