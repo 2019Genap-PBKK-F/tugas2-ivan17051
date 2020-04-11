@@ -1,30 +1,207 @@
 var express = require('express');
 var app = express();
-var mahasiswaController = require('./Controller/MahasiswaController')();
+var sql = require('mssql')
+
 //const http = require("http");
-const hostname = '10.199.14.46';
+const hostname = 'localhost';
 const port = 8011;
 
-// //Create HTTP server and listen on port 8020 for requests
-// const server = http.createServer((req, res) => {
-
-//   //Set the response HTTP header with HTTP status and Content type
-//   res.statusCode = 200;
-//   res.setHeader('Content-Type', 'text/plain');
-//   res.end('Hi World\n');
-// });
-
-// //listen for request on port 3000, and as a callback function have the port listened on logged
-// server.listen(port, hostname, () => {
-//   console.log(`Server running at http://${hostname}:${port}/`);
-// });
-
-app.get("/", function(request, response){
-  response.json({"Message":"Hello"});
+//CORS Middleware
+app.use(function (req, res, next) {
+  //Enabling CORS 
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "*");
+  next();
 });
-app.use("/mhs", mahasiswaController);
+
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
+
+app.get("/",function(req, res)
+{
+  res.end('Hello World');
+});
+
+app.get("/api/Mahasiswa", function(req, res)
+{
+  var query = "select * from mhs";
+  executeQuery(res, query, null, 0);
+});
+
+app.get("/api/DataDasar", function(req, res)
+{
+  var query = "select * from DataDasar";
+  executeQuery(res, query, null, 0);
+});
+
+app.get("/api/KategoriUnit", function(req, res)
+{
+  var query = "select * from KategoriUnit";
+  executeQuery(res, query, null, 0);
+});
+
+app.get("/api/Unit", function(req, res)
+{
+  var query = "select * from Unit";
+  executeQuery(res, query, null, 0);
+});
+
+app.get("/api/Capaian_Unit", function(req, res)
+{
+  var query = "select * from Capaian_Unit";
+  executeQuery(res, query, null, 0);
+});
+
+app.post("/api/Mahasiswa", function(req, res)
+{
+  var param = [
+    { name: 'NRP', sqltype: sql.VarChar, value: req.body.NRP },
+    { name: 'Nama', sqltype: sql.VarChar, value: req.body.Nama },
+    { name: 'Tgl_lahir', sqltype: sql.Char, value: req.body.Tgl_lahir }
+  ]
+
+  var query = 'insert into Mahasiswa ( NRP, Nama, Tgl_lahir ) values( @NRP, @Nama, @Tgl_lahir)';
+  executeQuery(res, query, param, 1)
+})
+
+app.post("/api/DataDasar", function(req, res)
+{
+  var param = [
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = 'insert into DataDasar ( nama ) values( @nama )';
+  executeQuery(res, query, param, 1)
+})
+
+app.post("/api/KategoriUnit", function(req, res)
+{
+  var param = [
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = 'insert into KategoriUnit ( nama ) values( @nama )';
+  executeQuery(res, query, param, 1)
+})
+
+app.post("/api/Unit", function(req, res)
+{
+  var param = [
+    { name: 'KategoriUnit_id', sqltype: sql.Int, value: req.body.KategoriUnit_id },
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = 'insert into Unit ( KategoriUnit_id, nama ) values( @KategoriUnit_id, @nama )';
+  executeQuery(res, query, param, 1)
+})
+
+app.post("/api/Capaian_Unit", function(req, res)
+{
+  var param = [
+    { name: 'DataDasar_id', sqltype: sql.Int, value: req.body.DataDasar_id },
+    { name: 'Unit_id', sqltype: sql.Int, value: req.body.Unit_id },
+    { name: 'waktu', sqltype: sql.DateTime, value: req.body.waktu },
+    { name: 'capaian', sqltype: sql.Float, value: req.body.capaian }
+  ]
+
+  var query = 'insert into Capaian_Unit ( DataDasar_id, Unit_id, waktu, capaian ) values( @DataDasar_id, @Unit_id, @waktu, @capaian )';
+  executeQuery(res, query, param, 1)
+})
+
+app.put('/api/Mahasiswa/:Id',function(req,res){
+  var param = [
+    { name: 'Id', sqltype: sql.Int, value: req.body.Id }, 
+    { name: 'NRP', sqltype: sql.VarChar, value: req.body.NRP },
+    { name: 'Nama', sqltype: sql.VarChar, value: req.body.Nama },
+    { name: 'Tgl_lahir', sqltype: sql.Char, value: req.body.Tgl_lahir }
+  ]
+
+  var query = "update Mahasiswa set NRP = @NRP, Nama = @Nama, Tgl_lahir = @Tgl_lahir WHERE Id =" + req.params.Id;
+  executeQuery(res,query, param, 1);
+});
+
+app.put('/api/DataDasar/:id',function(req,res){
+  var param = [
+    { name: 'id', sqltype: sql.Int, value: req.body.id }, 
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = "update DataDasar set nama = @nama WHERE id =" + req.params.id;
+  executeQuery(res,query, param, 1);
+});
+
+app.put('/api/KategoriUnit/:id',function(req,res){
+  var param = [
+    { name: 'id', sqltype: sql.Int, value: req.body.id }, 
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = "update KategoriUnit set nama = @nama WHERE id =" + req.params.id;
+  executeQuery(res,query, param, 1);
+});
+
+app.put('/api/Unit/:id',function(req,res){
+  var param = [
+    { name: 'id', sqltype: sql.Int, value: req.body.id }, 
+    { name: 'KategoriUnit_id', sqltype: sql.Int, value: req.body.KategoriUnit_id },
+    { name: 'nama', sqltype: sql.VarChar, value: req.body.nama }
+  ]
+
+  var query = "update Unit set KategoriUnit_id = @KategoriUnit_id, nama = @nama WHERE id =" + req.params.id;
+  executeQuery(res,query, param, 1);
+});
+
+app.put('/api/Capaian_Unit/:DataDasar_id&Unit_id',function(req,res){
+  var param = [
+    { name: 'DataDasar_id', sqltype: sql.Int, value: req.body.DataDasar_id },
+    { name: 'Unit_id', sqltype: sql.Int, value: req.body.Unit_id },
+    { name: 'waktu', sqltype: sql.DateTime, value: req.body.waktu }, 
+    { name: 'capaian', sqltype: sql.Float, value: req.body.capaian }
+  ]
+
+  var query = "update Capaian_Unit set DataDasar_id = @DataDasar_id, Unit_id = @Unit_id, waktu = @waktu, capaian = @capaian WHERE DataDasar_id =" + req.params.DataDasar_id + " AND Unit_id = " +req.params.Unit_id;
+  executeQuery(res,query, param, 1);
+});
+
+app.delete("/api/Mahasiswa/:Id", function(req, res)
+{
+  var query = "delete from Mahasiswa where Id=" + req.params.Id;
+  executeQuery(res, query, null, 0);
+})
+
+app.delete("/api/DataDasar/:id", function(req, res)
+{
+  var query = "delete from DataDasar where id=" + req.params.id;
+  executeQuery(res, query, null, 0);
+})
+
+app.delete("/api/KategoriUnit/:id", function(req, res)
+{
+  var query = "delete from KategoriUnit where id=" + req.params.id;
+  executeQuery(res, query, null, 0);
+})
+
+app.delete("/api/Unit/:id", function(req, res)
+{
+  var query = "delete from Unit where id=" + req.params.id;
+  executeQuery(res, query, null, 0);
+})
+
+app.delete("/api/Capaian_Unit/:DataDasar_id&Unit_id", function(req, res)
+{
+  var query = "delete from Capaian_Unit where DataDasar_id =" + req.params.DataDasar_id + "AND Unit_id =" + req.params.Unit_id;;
+  executeQuery(res, query, null, 0);
+})
+
+// app.get("/", function(request, response){
+//   response.json({"Message":"Hello"});
+// });
+// app.use("/mhs", mahasiswaController);
 
 app.listen(port, function(){
-  var message = "Server running on Port: " + port;
+  var datetime = new Date();
+  var message = "Server running on Port: " + port + " Started on: " + datetime;
   console.log(message);
 });
