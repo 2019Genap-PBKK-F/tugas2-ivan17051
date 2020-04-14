@@ -3,7 +3,8 @@ var app = express();
 var sql = require('mssql')
 
 //const http = require("http");
-const hostname = 'localhost';
+const hostname = '10.199.14.46'
+// const hostname = 'localhost';
 const port = 8011;
 
 //CORS Middleware
@@ -18,6 +19,38 @@ app.use(function (req, res, next) {
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json())
+
+const config = {
+  user: 'sa',
+  password: 'SaSa1212',
+  server: '10.199.13.253',
+  database: 'nrp05111740000060'
+};
+
+var executeQuery = function(res, query, param, reqType) {
+  sql.connect(config, function(err){
+    if(err) {
+      res.end('Connection Error\n' + err)
+    }
+    else {
+      var request = new sql.Request()
+      if(reqType != 0) {
+        param.forEach(function(p)
+        {
+          request.input(p.name, p.sqltype, p.value);
+        });
+      }
+      request.query(query, function(err, response){
+        if(err) {
+          console.log('Query Error\n' + err)
+        }
+        else{
+          res.send(response.recordset)
+        }
+     })
+    }
+  })
+}
 
 app.get("/",function(req, res)
 {
